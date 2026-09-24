@@ -1,7 +1,7 @@
 FROM alpine:3.19
 
 RUN apk add --no-cache \
-    xrdp xorg-server xf86-video-dummy xf86-input-void \
+    xrdp xorg-server xf86-video-dummy xf86-input-libinput \
     openbox firefox-esr dbus-x11 xterm ttf-dejavu bash shadow
 
 # Разрешаем запуск X-сервера любому пользователю
@@ -12,8 +12,8 @@ RUN printf '#!/bin/sh\nexport XDG_RUNTIME_DIR=/tmp/runtime-$(id -u)\nmkdir -p $X
     chmod +x /etc/xrdp/startwm.sh
 
 # Entrypoint: создает пользователя, стартует xrdp в foreground
-RUN printf '#!/bin/sh\nadduser -D -s /bin/sh rdpuser 2>/dev/null || true\necho "rdpuser:${RDP_PASSWORD:-changeme}" | chpasswd\nmkdir -p /run/dbus /var/run/xrdp\ndbus-daemon --system --fork\n/usr/sbin/xrdp-sesman\nexec /usr/sbin/xrdp --nodaemon' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENV RDP_PASSWORD=changeme
 EXPOSE 3389
