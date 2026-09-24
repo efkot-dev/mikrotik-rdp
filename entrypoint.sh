@@ -13,13 +13,18 @@ echo "rdpuser:${RDP_PASSWORD}" | chpasswd
 mkdir -p /run/dbus /var/run/xrdp /tmp/.X11-unix
 chmod 1777 /tmp/.X11-unix
 
+# Очищаем старые файлы от предыдущего запуска
+rm -f /run/dbus/dbus.pid
+rm -f /var/run/xrdp/xrdp.pid
+rm -f /var/run/xrdp/xrdp-sesman.pid
+
 # Запускаем dbus
 dbus-daemon --system --fork
 
 # Запускаем xrdp-sesman
 /usr/sbin/xrdp-sesman &
 
-# Ждем запуска sesman
+# Ждем запуска
 sleep 2
 
 # Запускаем xrdp в foreground
