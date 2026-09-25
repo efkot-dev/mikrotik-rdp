@@ -16,6 +16,5 @@ RUN echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENV RDP_PASSWORD=changeme
 EXPOSE 3389
 ENTRYPOINT ["/entrypoint.sh"]
