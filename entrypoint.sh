@@ -1,46 +1,35 @@
 #!/bin/sh
 set -e
 
-# --- пользователи из users.conf ---
-if [ -f /opt/rdp/users.conf ]; then
-  while IFS=':' read -r login pass rest; do
-    case "$login" in ''|\#*) continue ;; esac
-    id "$login" >/dev/null 2>&1 || adduser -D -h "/home/$login" -s /bin/bash "$login"
-    echo "$login:$pass" | chpasswd
-  done < /opt/rdp/users.conf
-else
-  id rdpuser >/dev/null 2>&1 || adduser -D -h /home/rdpuser -s /bin/bash rdpuser
-  echo "rdpuser:${RDP_PASSWORD:-changeme}" | chpasswd
-fi
+USERS_CONF=/opt/rdp/users.conf
 
-# --- структура профилей ---
+# без конфига пользователей контейнер не стартует
+if [ ! -f "$USERS_CONF" ]; then
+  echo "FATAL: $USERS_CONF not found - check mountlists" >&2
+  exit 1
+fi
+# страховка от CRLF, если конфиг правили с Windows
+sed -i 's/\r$//' "$USERS_CONF"
+
 mkdir -p /opt/rdp/profiles
 chmod 755 /opt/rdp/profiles
 
-# --- пользователи из users.conf ---
-if [ -f /opt/rdp/users.conf ]; then
-  while IFS=':' read -r login pass rest; do
-    case "$login" in ''|\#*) continue ;; esac
-    id "$login" >/dev/null 2>&1 || adduser -D -h "/home/$login" -s /bin/bash "$login"
-    echo "$login:$pass" | chpasswd
-    
-    # создаём директорию профиля и symlink
-    mkdir -p "/opt/rdp/profiles/$login"
-    chown "$login:$login" "/opt/rdp/profiles/$login"
-    
-    # удаляем старый профиль если был в home (при первом запуске после миграции)
-    [ -d "/home/$login/.ffprof" ] && rm -rf "/home/$login/.ffprof"
-    
-    # создаём symlink если нет
-    [ ! -L "/home/$login/.ffprof" ] && ln -sf "/opt/rdp/profiles/$login" "/home/$login/.ffprof"
-  done < /opt/rdp/users.conf
-else
-  id rdpuser >/dev/null 2>&1 || adduser -D -h /home/rdpuser -s /bin/bash rdpuser
-  echo "rdpuser:${RDP_PASSWORD:-changeme}" | chpasswd
-  mkdir -p /opt/rdp/profiles/rdpuser
-  chown rdpuser:rdpuser /opt/rdp/profiles/rdpuser
-  [ -d /home/rdpuser/.ffprof ] && rm -rf /home/rdpuser/.ffprof
-  [ ! -L /home/rdpuser/.ffprof ] && ln -sf /opt/rdp/profiles/rdpuser /home/rdpuser/.ffprof
+CREATED=0
+while IFS=':' read -r login pass rest; do
+  case "$login" in ''|\#*) continue ;; esac
+  id "$login" >/dev/null 2>&1 || adduser -D -h "/home/$login" -s /bin/bash "$login"
+  echo "$login:$pass" | chpasswd
+  mkdir -p "/opt/rdp/profiles/$login"
+  chown "$login:$login" "/opt/rdp/profiles/$login"
+  [ -d "/home/$login/.ffprof" ] && [ ! -L "/home/$login/.ffprof" ] && rm -rf "/home/$login/.ffprof"
+  [ ! -L "/home/$login/.ffprof" ] && ln -sf "/opt/rdp/profiles/$login" "/home/$login/.ffprof"
+  CREATED=$((CREATED+1))
+done < "$USERS_CONF"
+
+# конфиг есть, но валидных строк нет - тоже авария
+if [ "$CREATED" -eq 0 ]; then
+  echo "FATAL: no valid users in $USERS_CONF" >&2
+  exit 1
 fi
 
 mkdir -p /run/dbus /var/run/xrdp /tmp/.X11-unix
