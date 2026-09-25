@@ -7,15 +7,9 @@ RUN apk add --no-cache \
     openssh-client sshfs \
     dbus-x11 xterm xbindkeys setxkbmap xkeyboard-config \
     ttf-dejavu terminus-font \
-    bash shadow
+    bash shadow wine
 
 RUN echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
-
-# Скачиваем WinBox из Releases при сборке
-RUN apk add --no-cache curl && \
-    curl -L -o /usr/local/bin/winbox \
-    "https://github.com/efkot-dev/mikrotik-rdp/releases/download/WinBox/WinBox"
-RUN chmod +x /usr/local/bin/winbox
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
