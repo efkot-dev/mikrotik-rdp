@@ -1,18 +1,22 @@
 FROM alpine:3.19
 
-# X + RDP + WM + браузер + обвес (панель, хоткеи, раскладки)
 RUN apk add --no-cache \
     xrdp xorgxrdp xorg-server xf86-video-dummy xf86-input-libinput \
-    openbox tint2 \
-    firefox-esr \
+    openbox tint2 pcmanfm \
+    firefox-esr filezilla putty \
+    openssh-client sshfs \
     dbus-x11 xterm xbindkeys setxkbmap xkeyboard-config \
     ttf-dejavu terminus-font \
     bash shadow
 
-# разрешаем X-сервер любому пользователю
 RUN echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
 
-# entrypoint из репозитория как fallback (на роутере его перебивает mount)
+# Скачиваем WinBox из Releases при сборке
+RUN apk add --no-cache curl && \
+    curl -L -o /usr/local/bin/winbox \
+    "https://github.com/efkot-dev/mikrotik-rdp/releases/download/WinBox/WinBox"
+RUN chmod +x /usr/local/bin/winbox
+
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
