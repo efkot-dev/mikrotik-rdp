@@ -21,7 +21,7 @@ RUN apk add --no-cache \
     openbox tint2 pcmanfm \
     firefox-esr filezilla kitty \
     openssh-client \
-    dbus-x11 st \
+    dbus-x11 st sed\
     setxkbmap xkeyboard-config \
     ttf-dejavu terminus-font \
     shadow \
