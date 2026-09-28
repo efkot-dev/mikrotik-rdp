@@ -1,35 +1,33 @@
 FROM alpine:latest
 
-# Добавляем edge-репозитории для wine и winetricks
+# edge-репозитории: wine 11.x и winetricks
 RUN echo "@edge-community https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     echo "@edge-testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
+# Пакеты:
+#   xrdp xorgxrdp xorg-server xf86-video-dummy xf86-input-libinput - RDP-сервер + X-бэкенд
+#   openbox tint2 pcmanfm - WM, панель задач, файловый менеджер
+#   firefox-esr filezilla kitty - браузер, SFTP/FTP, SSH-клиент/терминал
+#   openssh-client - ssh/scp/sftp
+#   dbus-x11 st - сессионный bus + терминал (clipboard из коробки)
+#   setxkbmap xkeyboard-config - раскладки клавиатуры
+#   ttf-dejavu terminus-font - шрифты (включая кириллицу)
+#   shadow - adduser/chpasswd/chsh
+#   wine winetricks - запуск Windows/.NET приложений
+#   freerdp cabextract wget - RDP-клиент, распаковка CAB, загрузчик
 RUN apk add --no-cache \
-    # === X11 + RDP сервер ===
     xrdp xorgxrdp xorg-server \
     xf86-video-dummy xf86-input-libinput \
     openbox tint2 pcmanfm \
-    \
-    # === Приложения ===
-    firefox-esr filezilla kitty \  # kitty: SSH-клиент + терминал (замена putty)
-    \
-    # === Сетевые утилиты ===
+    firefox-esr filezilla kitty \
     openssh-client \
-    \
-    # === X11 компоненты ===
-    dbus-x11 st \  # st (suckless terminal) вместо xterm — clipboard работает из коробки
+    dbus-x11 st \
     setxkbmap xkeyboard-config \
-    \
-    # === Шрифты ===
     ttf-dejavu terminus-font \
-    \
-    # === Система ===
-    shadow \  # adduser/chpasswd/chsh
-    \
-    # === Wine ===
-    wine@edge-community \  # Wine из edge
-    winetricks@edge-testing \  # winetricks из edge/testing
-    freerdp cabextract wget  # xfreerdp + распаковка CAB + wget
+    shadow \
+    wine@edge-community \
+    winetricks@edge-testing \
+    freerdp cabextract wget
 
 RUN echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
 
