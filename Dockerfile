@@ -7,7 +7,7 @@ RUN echo "@edge-community https://dl-cdn.alpinelinux.org/alpine/edge/community" 
 # Пакеты:
 #   xrdp xorgxrdp xorg-server xf86-video-dummy xf86-input-libinput - RDP-сервер + X-бэкенд
 #   openbox tint2 pcmanfm - WM, панель задач, файловый менеджер
-#   firefox-esr filezilla kitty - браузер, SFTP/FTP, SSH-клиент/терминал
+#   firefox-esr filezilla - браузер, SFTP/FTP, SSH-клиент/терминал
 #   openssh-client - ssh/scp/sftp
 #   dbus-x11 st - сессионный bus + терминал (clipboard из коробки)
 #   setxkbmap xkeyboard-config - раскладки клавиатуры
@@ -19,7 +19,8 @@ RUN apk add --no-cache \
     xrdp xorgxrdp xorg-server \
     xf86-video-dummy xf86-input-libinput \
     openbox tint2 pcmanfm \
-    firefox-esr filezilla kitty \
+    firefox-esr filezilla \ 
+    lxterminal \
     openssh-client \
     dbus-x11 st sed\
     setxkbmap xkeyboard-config \
